@@ -1,7 +1,8 @@
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.Queue;
-import edu.princeton.cs.algs4.TrieST;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -47,6 +48,7 @@ public class BoggleSolver {
     }
 
     public static void main(String[] args) {
+        Instant start = Instant.now();
         In in = new In(args[0]);
         String[] dictionary = in.readAllStrings();
         BoggleSolver solver = new BoggleSolver(dictionary);
@@ -57,6 +59,9 @@ public class BoggleSolver {
             score += solver.scoreOf(word);
         }
         System.out.println("Score = " + score);
+        Instant finish = Instant.now();
+        long timeElapsed = Duration.between(start, finish).toMillis();
+        System.out.println(timeElapsed);
     }
 
     private class DFS {
@@ -78,15 +83,18 @@ public class BoggleSolver {
 
         private void runDfs(int v) {
             marked[v] = true;
+
             char ch = board.getLetter((v / numOfCols) % numOfCols, v % numOfCols);
             if (ch == 'Q') {
                 currentWord.append("QU");
             } else {
                 currentWord.append(ch);
             }
+
             if ((currentWord.length() > 2) && (dictionary.contains(currentWord.toString()))) {
                 validWords.add(currentWord.toString());
             }
+
             if (((Queue<String>) dictionary.keysWithPrefix(currentWord.toString())).size() != 0) {
                 for (int w : adjacent(v)) {
                     if (!marked[w]) {
@@ -94,6 +102,7 @@ public class BoggleSolver {
                     }
                 }
             }
+
             currentWord.deleteCharAt(currentWord.length() - 1);
             marked[v] = false;
         }
