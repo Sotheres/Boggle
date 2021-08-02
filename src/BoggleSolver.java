@@ -1,5 +1,4 @@
 import edu.princeton.cs.algs4.In;
-import edu.princeton.cs.algs4.Queue;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -8,11 +7,11 @@ import java.util.Set;
 
 public class BoggleSolver {
 
-    private final TrieST<Integer> dictionary;
+    private final TrieST dictionary;
     private final Set<String> validWords;
 
     public BoggleSolver(String[] dictionary) {
-        this.dictionary = new TrieST<>();
+        this.dictionary = new TrieST();
         for (String s : dictionary) {
             this.dictionary.put(s, 1);
         }
@@ -95,7 +94,7 @@ public class BoggleSolver {
                 validWords.add(currentWord.toString());
             }
 
-            if (((Queue<String>) dictionary.keysWithPrefix(currentWord.toString())).size() != 0) {
+            if (dictionary.isKeysWithPrefix(currentWord.toString())) {
                 for (int w : adjacent(v)) {
                     if (!marked[w]) {
                         runDfs(w);
@@ -103,7 +102,11 @@ public class BoggleSolver {
                 }
             }
 
-            currentWord.deleteCharAt(currentWord.length() - 1);
+            if (ch == 'Q') {
+                currentWord.delete(currentWord.length() - 2, currentWord.length());
+            } else {
+                currentWord.deleteCharAt(currentWord.length() - 1);
+            }
             marked[v] = false;
         }
 
