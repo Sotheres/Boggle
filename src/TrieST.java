@@ -1,15 +1,17 @@
 import edu.princeton.cs.algs4.Queue;
+import edu.princeton.cs.algs4.Stack;
 
 public class TrieST {
 
     private static final int R = 26;
 
-    private Node root;
+    public Node root;
 
-    private static class Node {
+    public static class Node {
 
-        private java.lang.Integer val;
-        private final Node[] next = new Node[R];
+        public boolean notNull = false;
+        public Integer val;
+        public final Node[] next = new Node[R];
     }
 
     public Integer get(String key) {
@@ -54,6 +56,7 @@ public class TrieST {
             char c = key.charAt(d);
             if (x.next[c - 65] == null) {
                 x.next[c - 65] = new Node();
+                x.notNull = true;
             }
             x = x.next[c - 65];
             d++;
@@ -96,15 +99,15 @@ public class TrieST {
 
     private void collect(Node init, StringBuilder prefix, Queue<String> results) {
         Node x = init;
-        Queue<StringBuilder> qStr = new Queue<>();
-        Queue<Node> qNode = new Queue<>();
+        Stack<StringBuilder> strStack = new Stack<>();
+        Stack<Node> nodeStack = new Stack<>();
 
-        qStr.enqueue(prefix);
-        qNode.enqueue(x);
+        strStack.push(prefix);
+        nodeStack.push(x);
 
-        while (!qStr.isEmpty()) {
-            prefix = qStr.dequeue();
-            x = qNode.dequeue();
+        while (!strStack.isEmpty()) {
+            prefix = strStack.pop();
+            x = nodeStack.pop();
 
             if (x.val != null) {
                 results.enqueue(prefix.toString());
@@ -113,8 +116,8 @@ public class TrieST {
             for (char c = 65; c < 65 + R; c++) {
                 prefix.append(c);
                 if (x.next[c - 65] != null) {
-                    qStr.enqueue(prefix);
-                    qNode.enqueue(x.next[c - 65]);
+                    strStack.push(prefix);
+                    nodeStack.push(x.next[c - 65]);
                 }
                 prefix.deleteCharAt(prefix.length() - 1);
             }

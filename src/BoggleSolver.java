@@ -1,7 +1,5 @@
 import edu.princeton.cs.algs4.In;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,7 +21,7 @@ public class BoggleSolver {
         int cols = board.cols();
 
         for (int i = 0; i < rows * cols; i++) {
-            new DFS(rows, cols, board, i);
+            new DFS(rows, cols, board).run(i, dictionary.root);
         }
 
         return validWords;
@@ -47,7 +45,6 @@ public class BoggleSolver {
     }
 
     public static void main(String[] args) {
-        Instant start = Instant.now();
         In in = new In(args[0]);
         String[] dictionary = in.readAllStrings();
         BoggleSolver solver = new BoggleSolver(dictionary);
@@ -58,9 +55,6 @@ public class BoggleSolver {
             score += solver.scoreOf(word);
         }
         System.out.println("Score = " + score);
-        Instant finish = Instant.now();
-        long timeElapsed = Duration.between(start, finish).toMillis();
-        System.out.println(timeElapsed);
     }
 
     private class DFS {
@@ -71,33 +65,38 @@ public class BoggleSolver {
         private final BoggleBoard board;
         private final StringBuilder currentWord;
 
-        public DFS(int rows, int cols, BoggleBoard board, int s) {
+        public DFS(int rows, int cols, BoggleBoard board) {
             this.numOfRows = rows;
             this.numOfCols = cols;
             marked = new boolean[rows * cols];
             this.board = board;
             currentWord = new StringBuilder();
-            runDfs(s);
         }
 
-        private void runDfs(int v) {
+        public void run(int v, TrieST.Node prev) {
+            char ch = board.getLetter((v / numOfCols) % numOfCols, v % numOfCols);
+            TrieST.Node curr = prev.next[ch - 65];
+
+            if (curr == null) {
+                return;
+            }
+
             marked[v] = true;
 
-            char ch = board.getLetter((v / numOfCols) % numOfCols, v % numOfCols);
             if (ch == 'Q') {
                 currentWord.append("QU");
             } else {
                 currentWord.append(ch);
             }
 
-            if ((currentWord.length() > 2) && (dictionary.contains(currentWord.toString()))) {
+            if ((currentWord.length() > 2) && (curr.val != 0)) {
                 validWords.add(currentWord.toString());
             }
 
-            if (dictionary.isKeysWithPrefix(currentWord.toString())) {
+            if (curr.notNull) {
                 for (int w : adjacent(v)) {
                     if (!marked[w]) {
-                        runDfs(w);
+                        run(w, curr);
                     }
                 }
             }
@@ -111,8 +110,11 @@ public class BoggleSolver {
         }
 
         private int[] adjacent(int f) {
-            int[] adj;
+            if (numOfRows == 1 || numOfCols == 1) {
+                return exoticAdj(f);
+            }
 
+            int[] adj;
             if (f == 0) {
                 adj = new int[]{f + 1,
                         f + numOfCols,
@@ -162,6 +164,20 @@ public class BoggleSolver {
                         f - 1,
                         f + numOfCols - 1,
                         f + numOfCols};
+            }
+            return adj;
+        }
+
+        private int[] exoticAdj(int f) {
+            int[] adj;
+
+            if (f == 0) {
+                adj = new int[]{1};
+            } else if (((numOfCols == 1) && (f != numOfRows - 1))
+                    || ((numOfRows == 1) && (f != numOfCols - 1))) {
+                adj = new int[]{f - 1, f + 1};
+            } else {
+                adj = new int[]{f - 1};
             }
 
             return adj;
