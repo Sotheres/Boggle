@@ -62,38 +62,42 @@ public class BoggleSolver {
         private final boolean[] marked;
         private final int numOfRows;
         private final int numOfCols;
-        private final BoggleBoard board;
         private final StringBuilder currentWord;
+        private final char[] letters;
 
         public DFS(int rows, int cols, BoggleBoard board) {
             this.numOfRows = rows;
             this.numOfCols = cols;
             marked = new boolean[rows * cols];
-            this.board = board;
+            letters = new char[rows * cols];
+            for (int i = 0; i < numOfRows; i++) {
+                for (int j = 0; j < numOfCols; j++) {
+                    letters[i * numOfCols + j] = board.getLetter(i, j);
+                }
+            }
             currentWord = new StringBuilder();
         }
 
         public void run(int v, TrieST.Node prev) {
-            char ch = board.getLetter((v / numOfCols) % numOfCols, v % numOfCols);
+            char ch = letters[v];
             TrieST.Node curr = prev.next[ch - 65];
-
-            if (curr == null) {
-                return;
-            }
-
-            marked[v] = true;
 
             if (ch == 'Q') {
                 currentWord.append("QU");
+                if (curr != null) {
+                    curr = curr.next['U' - 65];
+                }
             } else {
                 currentWord.append(ch);
             }
 
-            if ((currentWord.length() > 2) && (curr.val != 0)) {
+            marked[v] = true;
+
+            if ((currentWord.length() > 2) && (curr != null && curr.val != null)) {
                 validWords.add(currentWord.toString());
             }
 
-            if (curr.notNull) {
+            if (curr != null && curr.notNull) {
                 for (int w : adjacent(v)) {
                     if (!marked[w]) {
                         run(w, curr);
