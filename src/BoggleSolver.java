@@ -6,22 +6,22 @@ import java.util.Set;
 public class BoggleSolver {
 
     private final TrieST dictionary;
-    private final Set<String> validWords;
+    private Set<String> validWords;
 
     public BoggleSolver(String[] dictionary) {
         this.dictionary = new TrieST();
         for (String s : dictionary) {
             this.dictionary.put(s, 1);
         }
-        validWords = new HashSet<>();
     }
 
     public Iterable<String> getAllValidWords(BoggleBoard board) {
+        validWords = new HashSet<>();
         int rows = board.rows();
         int cols = board.cols();
 
         for (int i = 0; i < rows * cols; i++) {
-            new DFS(rows, cols, board).run(i, dictionary.root);
+            new DFS(rows, cols, board).run(i, dictionary.getRoot());
         }
 
         return validWords;
@@ -31,7 +31,9 @@ public class BoggleSolver {
         if (!dictionary.contains(word)) {
             return 0;
         }
-        if (3 <= word.length() && word.length() <= 4) {
+        if (word.length() < 3) {
+            return 0;
+        } else if (word.length() <= 4) {
             return 1;
         } else if (word.length() == 5) {
             return 2;
@@ -80,12 +82,12 @@ public class BoggleSolver {
 
         public void run(int v, TrieST.Node prev) {
             char ch = letters[v];
-            TrieST.Node curr = prev.next[ch - 65];
+            TrieST.Node curr = prev.getNext(ch - 65);
 
             if (ch == 'Q') {
                 currentWord.append("QU");
                 if (curr != null) {
-                    curr = curr.next['U' - 65];
+                    curr = curr.getNext('U' - 65);
                 }
             } else {
                 currentWord.append(ch);
@@ -93,11 +95,11 @@ public class BoggleSolver {
 
             marked[v] = true;
 
-            if ((currentWord.length() > 2) && (curr != null && curr.val != null)) {
+            if ((currentWord.length() > 2) && (curr != null && curr.getVal() != 0)) {
                 validWords.add(currentWord.toString());
             }
 
-            if (curr != null && curr.notNull) {
+            if (curr != null && curr.isNotNull()) {
                 for (int w : adjacent(v)) {
                     if (!marked[w]) {
                         run(w, curr);
@@ -114,7 +116,9 @@ public class BoggleSolver {
         }
 
         private int[] adjacent(int f) {
-            if (numOfRows == 1 || numOfCols == 1) {
+            if (numOfRows == 1 && numOfCols == 1) {
+                return new int[0];
+            } else if (numOfRows == 1 || numOfCols == 1) {
                 return exoticAdj(f);
             }
 
@@ -133,11 +137,11 @@ public class BoggleSolver {
                 adj = new int[]{f - 1,
                         f + numOfCols - 1,
                         f + numOfCols};
-            } else if (f == (numOfCols - 1) * numOfRows) {
+            } else if (f == (numOfRows - 1) * numOfCols) {
                 adj = new int[]{f - numOfCols,
                         f - numOfCols + 1,
                         f + 1};
-            } else if (((numOfCols - 1) * numOfRows < f) && (f < numOfCols * numOfRows - 1)) {
+            } else if (((numOfRows - 1) * numOfCols < f) && (f < numOfCols * numOfRows - 1)) {
                 adj = new int[]{f - numOfCols - 1,
                         f - numOfCols,
                         f - numOfCols + 1,

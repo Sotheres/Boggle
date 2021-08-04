@@ -1,25 +1,38 @@
-import edu.princeton.cs.algs4.Queue;
-import edu.princeton.cs.algs4.Stack;
-
 public class TrieST {
 
     private static final int R = 26;
 
-    public Node root;
+    private Node root;
 
     public static class Node {
 
-        public boolean notNull = false;
-        public Integer val;
-        public final Node[] next = new Node[R];
+        private boolean notNull = false;
+        private int val;
+        private final Node[] next = new Node[R];
+
+        public boolean isNotNull() {
+            return notNull;
+        }
+
+        public int getVal() {
+            return val;
+        }
+
+        public Node getNext(int i) {
+            return next[i];
+        }
     }
 
-    public Integer get(String key) {
+    public Node getRoot() {
+        return root;
+    }
+
+    public int get(String key) {
         if (key == null) {
             throw new IllegalArgumentException("argument to get() is null");
         }
         if (root == null) {
-            return null;
+            return 0;
         }
 
         Node x = root;
@@ -28,7 +41,7 @@ public class TrieST {
             char c = key.charAt(d);
             x = x.next[c - 65];
             if (x == null) {
-                return null;
+                return 0;
             }
             d++;
         }
@@ -38,11 +51,11 @@ public class TrieST {
 
     public boolean contains(String key) {
         if (key == null) throw new IllegalArgumentException("argument to contains() is null");
-        return get(key) != null;
+        return get(key) != 0;
     }
 
-    public void put(String key, Integer val) {
-        if (key == null || val == null) {
+    public void put(String key, int val) {
+        if (key == null) {
             throw new IllegalArgumentException("first argument to put() is null");
         }
 
@@ -63,64 +76,5 @@ public class TrieST {
         }
 
         x.val = val;
-    }
-
-    public boolean isKeysWithPrefix(String prefix) {
-        Queue<String> results = new Queue<>();
-        Node x = getNodeOf(prefix);
-        if (x == null) {
-            return false;
-        }
-        collect(x, new StringBuilder(prefix), results);
-        return results.size() != 0;
-    }
-
-    private Node getNodeOf(String key) {
-        if (key == null) {
-            throw new IllegalArgumentException("argument to get() is null");
-        }
-        if (root == null) {
-            return null;
-        }
-
-        Node x = root;
-        int d = 0;
-        while (d != key.length()) {
-            char c = key.charAt(d);
-            x = x.next[c - 65];
-            if (x == null) {
-                return null;
-            }
-            d++;
-        }
-
-        return x;
-    }
-
-    private void collect(Node init, StringBuilder prefix, Queue<String> results) {
-        Node x = init;
-        Stack<StringBuilder> strStack = new Stack<>();
-        Stack<Node> nodeStack = new Stack<>();
-
-        strStack.push(prefix);
-        nodeStack.push(x);
-
-        while (!strStack.isEmpty()) {
-            prefix = strStack.pop();
-            x = nodeStack.pop();
-
-            if (x.val != null) {
-                results.enqueue(prefix.toString());
-            }
-
-            for (char c = 65; c < 65 + R; c++) {
-                prefix.append(c);
-                if (x.next[c - 65] != null) {
-                    strStack.push(prefix);
-                    nodeStack.push(x.next[c - 65]);
-                }
-                prefix.deleteCharAt(prefix.length() - 1);
-            }
-        }
     }
 }
